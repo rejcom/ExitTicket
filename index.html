@@ -117,7 +117,7 @@ code{background:#EDF2F7;border-radius:5px;padding:1px 6px;font-size:.85em}
 /* ---------- výsledky ---------- */
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-top:16px}
 .moodbar{display:flex;flex-direction:column;gap:8px}
-.mrow{display:grid;grid-template-columns:38px 1fr 34px;align-items:center;gap:8px}
+.mrow{display:grid;grid-template-columns:38px 1fr 86px;align-items:center;gap:8px}
 .mrow .bar{height:20px;border:1.5px solid var(--ink);border-radius:6px;background:#fff;overflow:hidden}
 .mrow .fill{height:100%;background:var(--hl);border-right:1.5px solid var(--ink);min-width:0;transition:width .4s ease}
 .mrow .cnt{font-weight:700;font-family:'Shantell Sans',cursive;text-align:right}
@@ -437,13 +437,18 @@ async function viewResults(id){
 
     const counts = [0,0,0,0,0];
     resps.forEach(r => { if(r.mood>=0 && r.mood<5) counts[r.mood]++; });
-    const max = Math.max(1, ...counts);
-    $("#rMoods").innerHTML = MOODS.map((m,i)=>`
+    const total = counts.reduce((a,b)=>a+b,0) || 1;
+    $("#rMoods").innerHTML = MOODS.map((m,i)=>{
+      const pct = Math.round(counts[i]/total*100);
+      return `
       <div class="mrow">
         <span style="font-size:1.4rem">${m.e}</span>
-        <div class="bar"><div class="fill" style="width:${counts[i]/max*100}%"></div></div>
-        <span class="cnt">${counts[i]}</span>
-      </div>`).join("");
+        <div class="bar" style="height:20px;border:1.5px solid var(--ink);border-radius:6px;background:#fff;overflow:hidden">
+          <div class="fill" style="height:100%;width:${pct}%;background:var(--hl);${counts[i] ? "border-right:1.5px solid var(--ink);" : ""}transition:width .4s ease"></div>
+        </div>
+        <span class="cnt">${counts[i]} <small style="font-weight:600;color:var(--ink-soft);font-size:.72rem">${pct}\u00A0%</small></span>
+      </div>`;
+    }).join("");
 
     const stub = (txt, who) => `<div class="stub">${esc(txt)}${who ? `<span class="who">— ${esc(who)}</span>` : ""}</div>`;
     const a1 = resps.filter(r=>r.a1).map(r=>stub(r.a1, r.name)).reverse();
