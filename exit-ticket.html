@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exit Ticket — zpětná vazba ze třídy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Shantell+Sans:wght@500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F6F8FA;
+  --line:#E3ECF3;
+  --ink:#1C2B3A;
+  --ink-soft:#5A6B7D;
+  --hl:#FFD338;      /* zvýrazňovač */
+  --red:#E4572E;     /* červená tužka */
+  --green:#2F9E77;
+  --blue:#2E6ED6;
+  --card:#FFFFFF;
+  --radius:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:'Inter',system-ui,sans-serif;
+  color:var(--ink);
+  background:var(--paper);
+  background-image:repeating-linear-gradient(to bottom, transparent 0 31px, var(--line) 31px 32px);
+  min-height:100vh;
+  line-height:1.5;
+}
+.wrap{max-width:960px;margin:0 auto;padding:24px 16px 80px}
+h1,h2,h3,.display{font-family:'Shantell Sans','Inter',cursive;letter-spacing:.2px}
+h1{font-size:clamp(1.7rem,4.5vw,2.6rem);font-weight:800}
+h2{font-size:1.25rem;font-weight:700}
+.eyebrow{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--ink-soft)}
+.mark{background:linear-gradient(transparent 55%, var(--hl) 55% 92%, transparent 92%);padding:0 .15em}
+.sub{color:var(--ink-soft);max-width:56ch}
+
+/* ---------- karty a lístky ---------- */
+.card{
+  background:var(--card);
+  border:2px solid var(--ink);
+  border-radius:var(--radius);
+  box-shadow:4px 4px 0 var(--ink);
+  padding:20px;
+}
+.stub{
+  background:var(--card);
+  border:1.5px solid var(--ink);
+  border-left:2px dashed var(--ink);
+  border-radius:6px 12px 12px 6px;
+  padding:12px 14px 12px 22px;
+  position:relative;
+  box-shadow:3px 3px 0 rgba(28,43,58,.18);
+  overflow-wrap:anywhere;
+}
+.stub::before{
+  content:"";position:absolute;left:8px;top:12px;width:7px;height:7px;border-radius:50%;
+  background:var(--paper);border:1.5px solid var(--ink);
+}
+.stub:nth-child(odd){transform:rotate(-.6deg)}
+.stub:nth-child(even){transform:rotate(.5deg)}
+.stub .who{display:block;margin-top:6px;font-size:.75rem;color:var(--ink-soft);font-weight:600}
+
+/* ---------- ovládací prvky ---------- */
+label{display:block;font-weight:600;font-size:.9rem;margin:14px 0 6px}
+input[type=text],textarea{
+  width:100%;font:inherit;color:var(--ink);
+  background:#fff;border:2px solid var(--ink);border-radius:10px;
+  padding:10px 12px;
+}
+textarea{min-height:84px;resize:vertical}
+input:focus-visible,textarea:focus-visible,button:focus-visible,a:focus-visible,summary:focus-visible{
+  outline:3px solid var(--blue);outline-offset:2px;
+}
+.btn{
+  display:inline-block;font-family:'Shantell Sans','Inter',cursive;font-weight:700;font-size:1rem;
+  color:var(--ink);background:var(--hl);
+  border:2px solid var(--ink);border-radius:12px;
+  padding:12px 22px;cursor:pointer;
+  box-shadow:3px 3px 0 var(--ink);
+  transition:transform .08s ease, box-shadow .08s ease;
+  text-decoration:none;
+}
+.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.btn.secondary{background:#fff}
+.btn.small{font-size:.85rem;padding:8px 14px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.spread{justify-content:space-between}
+.muted{color:var(--ink-soft);font-size:.85rem}
+.pill{display:inline-block;border:1.5px solid var(--ink);border-radius:99px;padding:2px 12px;font-size:.78rem;font-weight:700;background:#fff}
+.pill.ok{background:#E4F5EE;border-color:var(--green);color:var(--green)}
+.pill.warn{background:#FDEDE7;border-color:var(--red);color:var(--red)}
+
+details{margin-top:16px;border-top:1.5px dashed var(--line);padding-top:12px}
+summary{cursor:pointer;font-weight:600;font-size:.9rem}
+details ol{margin:10px 0 0 20px;font-size:.88rem;color:var(--ink-soft)}
+details li{margin-bottom:4px}
+code{background:#EDF2F7;border-radius:5px;padding:1px 6px;font-size:.85em}
+
+/* ---------- nálada ---------- */
+.moods{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px}
+.mood{
+  flex:1 1 56px;min-width:56px;
+  background:#fff;border:2px solid var(--ink);border-radius:12px;
+  padding:10px 4px;cursor:pointer;text-align:center;
+  box-shadow:2px 2px 0 rgba(28,43,58,.2);
+  transition:transform .08s ease;
+}
+.mood .e{font-size:1.7rem;display:block;line-height:1.2}
+.mood .l{font-size:.68rem;font-weight:600;color:var(--ink-soft)}
+.mood.sel{background:var(--hl);transform:scale(1.06)}
+.mood:active{transform:scale(.97)}
+
+/* ---------- výsledky ---------- */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-top:16px}
+.moodbar{display:flex;flex-direction:column;gap:8px}
+.mrow{display:grid;grid-template-columns:38px 1fr 34px;align-items:center;gap:8px}
+.mrow .bar{height:20px;border:1.5px solid var(--ink);border-radius:6px;background:#fff;overflow:hidden}
+.mrow .fill{height:100%;background:var(--hl);border-right:1.5px solid var(--ink);min-width:0;transition:width .4s ease}
+.mrow .cnt{font-weight:700;font-family:'Shantell Sans',cursive;text-align:right}
+.answers{display:grid;grid-template-columns:1fr;gap:10px;margin-top:10px}
+@media(min-width:680px){.answers{grid-template-columns:1fr 1fr}}
+.bignum{font-family:'Shantell Sans',cursive;font-weight:800;font-size:2.6rem;line-height:1}
+.qr{width:min(320px,80vw);height:auto;border:2px solid var(--ink);border-radius:var(--radius);background:#fff;padding:10px;box-shadow:4px 4px 0 var(--ink)}
+.session-grid{display:grid;grid-template-columns:1fr;gap:20px;margin-top:20px}
+@media(min-width:760px){.session-grid{grid-template-columns:360px 1fr}}
+.linkbox{font-size:.8rem;word-break:break-all;background:#EDF2F7;border-radius:8px;padding:8px 10px;margin-top:10px}
+
+header.top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:22px;flex-wrap:wrap}
+.brand{font-family:'Shantell Sans',cursive;font-weight:800;font-size:1.1rem}
+.brand span{color:var(--red)}
+.hidden{display:none !important}
+.thanks{text-align:center;padding:50px 10px}
+.thanks .e{font-size:4rem}
+footer{margin-top:40px;text-align:center;font-size:.78rem;color:var(--ink-soft)}
+@media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">🎟️ Exit<span>Ticket</span> <small id="brandLabel" style="font-weight:600;color:var(--ink-soft)"></small></div>
+    <div class="muted" id="topStatus"></div>
+  </header>
+  <main id="app"></main>
+  <footer>Vzniklo vibecodingem · jeden HTML soubor, žádná instalace</footer>
+</div>
+
+<script>
+"use strict";
+/* ================= KONFIGURACE TÉTO INSTALACE =================
+   Vyplněná adresa databáze se použije vždy a QR kód funguje
+   bez jakéhokoli nastavování. Název se zobrazí v hlavičce.      */
+const CONFIG = {
+  dbUrl: "https://exitticket-39d9d-default-rtdb.europe-west1.firebasedatabase.app",
+  label: "LŠMU Luhačovice",
+  /* ⚠️ aiKey vyplňte JEN pro lokální/soukromé použití. Na veřejném
+     webu (Vercel) by si klíč mohl kdokoli zkopírovat ze zdrojáku
+     a čerpat na váš účet. Prázdné = aplikace si klíč vyžádá a uloží
+     jen do prohlížeče. Podporuje Mistral i Anthropic (sk-ant-…). */
+  aiKey: ""
+};
+
+/* ================= konfigurace a pomocníci ================= */
+const MOODS = [
+  {e:"😀", l:"Skvělé"},
+  {e:"🙂", l:"Dobré"},
+  {e:"😐", l:"Tak napůl"},
+  {e:"🙁", l:"Moc ne"},
+  {e:"😖", l:"Ztracen/a"}
+];
+const LS_DB = "et_dbUrl";
+const LS_AI = "et_aiKey";
+const $ = sel => document.querySelector(sel);
+const app = $("#app");
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+const rid = () => Math.random().toString(36).slice(2,8).toUpperCase();
+const getDb = () => (CONFIG.dbUrl || localStorage.getItem(LS_DB) || "").replace(/\/+$/,"");
+let pollTimer = null;
+
+function parseHash(){
+  const h = location.hash.replace(/^#/,"");
+  const p = new URLSearchParams(h);
+  return { s:p.get("s"), r:p.get("r"), db:p.get("db") ? decodeURIComponent(p.get("db")) : null };
+}
+
+/* ================= datová vrstva =================
+   Vzdálená = Firebase Realtime Database (REST, testovací režim).
+   Lokální  = kiosek na jednom zařízení (localStorage).           */
+function makeStore(dbUrl){
+  if(dbUrl){
+    const base = dbUrl.replace(/\/+$/,"");
+    return {
+      remote:true,
+      async putMeta(id, meta){
+        const r = await fetch(`${base}/sessions/${id}/meta.json`, {method:"PUT", body:JSON.stringify(meta)});
+        if(!r.ok) throw new Error("Zápis do databáze selhal ("+r.status+")");
+      },
+      async getMeta(id){
+        const r = await fetch(`${base}/sessions/${id}/meta.json`);
+        if(!r.ok) throw new Error("Čtení z databáze selhalo ("+r.status+")");
+        return r.json();
+      },
+      async addResp(id, resp){
+        const r = await fetch(`${base}/sessions/${id}/resp.json`, {method:"POST", body:JSON.stringify(resp)});
+        if(!r.ok) throw new Error("Odeslání selhalo ("+r.status+")");
+      },
+      async getResps(id){
+        const r = await fetch(`${base}/sessions/${id}/resp.json`);
+        if(!r.ok) return [];
+        const data = await r.json();
+        return data ? Object.values(data) : [];
+      }
+    };
+  }
+  // kiosek
+  const key = id => "et_sess_" + id;
+  const load = id => JSON.parse(localStorage.getItem(key(id)) || "null");
+  return {
+    remote:false,
+    async putMeta(id, meta){ localStorage.setItem(key(id), JSON.stringify({meta, resps:[]})); },
+    async getMeta(id){ const d = load(id); return d ? d.meta : null; },
+    async addResp(id, resp){ const d = load(id) || {meta:{}, resps:[]}; d.resps.push(resp); localStorage.setItem(key(id), JSON.stringify(d)); },
+    async getResps(id){ const d = load(id); return d ? d.resps : []; }
+  };
+}
+
+/* ================= router ================= */
+if(CONFIG.label){
+  document.getElementById("brandLabel").textContent = "· " + CONFIG.label;
+  document.title = "ExitTicket · " + CONFIG.label;
+}
+window.addEventListener("hashchange", route);
+route();
+
+function route(){
+  if(pollTimer){ clearInterval(pollTimer); pollTimer = null; }
+  const h = parseHash();
+  if(h.s) return viewStudent(h.s, h.db);
+  if(h.r) return viewResults(h.r);
+  viewHome();
+}
+
+/* ================= domovská obrazovka (učitel) ================= */
+function viewHome(){
+  const db = getDb();
+  $("#topStatus").innerHTML = db
+    ? '<span class="pill ok">databáze připojena</span>'
+    : '<span class="pill warn">kioskový režim</span>';
+
+  app.innerHTML = `
+    <p class="eyebrow">Formativní zpětná vazba za 2 minuty</p>
+    <h1>Poslední lísteček <span class="mark">před odchodem</span> ze třídy</h1>
+    <p class="sub" style="margin-top:8px">Žáci naskenují QR kód, na mobilu zvolí náladu a odpoví na dvě otázky.
+    Vy sledujete odpovědi živě — anonymně a bez přihlašování.</p>
+
+    <div class="card" style="margin-top:24px">
+      <h2>Nový sběr zpětné vazby</h2>
+      <label for="fTitle">Název hodiny či tématu</label>
+      <input type="text" id="fTitle" placeholder="Např. Zlomky — sčítání, 6.B" maxlength="80">
+      <label for="fQ1">Otázka 1</label>
+      <input type="text" id="fQ1" value="Co si z dnešní hodiny odnáším?" maxlength="120">
+      <label for="fQ2">Otázka 2</label>
+      <input type="text" id="fQ2" value="Co mi zůstalo nejasné?" maxlength="120">
+      <div class="row" style="margin-top:20px">
+        <button class="btn" id="btnStart">Spustit sběr</button>
+        <span class="muted">${db ? "Žáci se připojí přes QR kód." : "Bez databáze poběží kiosek: žáci odpovídají postupně na tomto zařízení."}</span>
+      </div>
+      <div class="muted" id="homeErr" style="color:var(--red);margin-top:8px"></div>
+
+      ${CONFIG.dbUrl ? `<p class="muted" style="margin-top:16px">🔒 Databáze je pro tuto instalaci nastavena napevno — sběr přes QR kód funguje bez nastavování.</p>` : `
+      <details>
+        <summary>Nastavení databáze (pro sběr přes QR kód)</summary>
+        <p class="muted" style="margin-top:8px">Vložte adresu své Firebase Realtime Database. Bez ní aplikace běží jen na tomto zařízení.</p>
+        <label for="fDb">Adresa databáze</label>
+        <input type="text" id="fDb" placeholder="https://muj-projekt-default-rtdb.europe-west1.firebasedatabase.app" value="${esc(db)}">
+        <div class="row" style="margin-top:10px">
+          <button class="btn small secondary" id="btnSaveDb">Uložit adresu</button>
+          <span class="muted" id="dbMsg"></span>
+        </div>
+        <details>
+          <summary>Jak databázi zdarma získat (5 minut, jednorázově)</summary>
+          <ol>
+            <li>Otevřete <code>console.firebase.google.com</code> a založte nový projekt.</li>
+            <li>V menu zvolte <strong>Realtime Database → Create database</strong> (region Belgie/europe-west1).</li>
+            <li>Zvolte <strong>testovací režim</strong> pravidel (start in test mode).</li>
+            <li>Zkopírujte adresu databáze (končí na <code>firebasedatabase.app</code>) a vložte ji sem.</li>
+          </ol>
+          <p class="muted" style="margin-top:8px">⚠️ V testovacím režimu jsou data veřejně čitelná — proto sbíráme jen anonymní odpovědi, žádné osobní údaje.</p>
+        </details>
+      </details>`}
+    </div>`;
+
+  const btnSaveDb = $("#btnSaveDb");
+  if(btnSaveDb) btnSaveDb.onclick = () => {
+    const v = $("#fDb").value.trim().replace(/\/+$/,"");
+    if(v && !/^https:\/\/.+\.(firebasedatabase\.app|firebaseio\.com)$/.test(v)){
+      $("#dbMsg").textContent = "Adresa nevypadá jako Firebase databáze."; return;
+    }
+    localStorage.setItem(LS_DB, v);
+    $("#dbMsg").textContent = v ? "Uloženo ✓" : "Smazáno — kioskový režim.";
+    $("#topStatus").innerHTML = v ? '<span class="pill ok">databáze připojena</span>' : '<span class="pill warn">kioskový režim</span>';
+  };
+
+  $("#btnStart").onclick = async () => {
+    const meta = {
+      title: $("#fTitle").value.trim() || "Dnešní hodina",
+      q1: $("#fQ1").value.trim() || "Co si z dnešní hodiny odnáším?",
+      q2: $("#fQ2").value.trim() || "Co mi zůstalo nejasné?",
+      created: Date.now()
+    };
+    const id = rid();
+    const btn = $("#btnStart");
+    btn.disabled = true; btn.textContent = "Zakládám…";
+    try{
+      await makeStore(getDb()).putMeta(id, meta);
+      location.hash = "r=" + id;
+    }catch(err){
+      $("#homeErr").textContent = "Nepodařilo se založit sběr: " + err.message;
+      btn.disabled = false; btn.textContent = "Spustit sběr";
+    }
+  };
+}
+
+/* ================= výsledky (učitel, na plátno) ================= */
+async function viewResults(id){
+  const db = getDb();
+  const store = makeStore(db);
+  $("#topStatus").innerHTML = store.remote
+    ? '<span class="pill ok">živý sběr</span>'
+    : '<span class="pill warn">kiosek</span>';
+
+  let meta = null;
+  try{ meta = await store.getMeta(id); }catch(e){}
+  if(!meta){
+    app.innerHTML = `<div class="card"><h2>Sběr nenalezen</h2>
+      <p class="muted" style="margin-top:8px">Zkontrolujte adresu databáze v nastavení, nebo založte nový sběr.</p>
+      <p style="margin-top:16px"><a class="btn secondary small" href="#" onclick="location.hash='';return false">← Zpět</a></p></div>`;
+    return;
+  }
+
+  const studentUrl = location.origin + location.pathname + "#s=" + id + (db && !CONFIG.dbUrl ? "&db=" + encodeURIComponent(db) : "");
+  const qrSrc = "https://api.qrserver.com/v1/create-qr-code/?size=640x640&margin=2&data=" + encodeURIComponent(studentUrl);
+
+  app.innerHTML = `
+    <div class="row spread">
+      <div>
+        <p class="eyebrow">Kód sběru ${esc(id)}</p>
+        <h1>${esc(meta.title)}</h1>
+      </div>
+      <div class="row">
+        <a class="btn secondary small" href="#" onclick="location.hash='';return false">＋ Nový sběr</a>
+      </div>
+    </div>
+
+    <div class="session-grid">
+      <div class="card" style="text-align:center">
+        ${store.remote ? `
+          <h2>Připoj se z mobilu</h2>
+          <img class="qr" src="${qrSrc}" alt="QR kód s odkazem pro žáky" style="margin-top:12px">
+          <div class="linkbox" id="linkBox">${esc(studentUrl)}</div>
+          <div class="row" style="justify-content:center;margin-top:12px">
+            <button class="btn small secondary" id="btnCopy">Kopírovat odkaz</button>
+          </div>
+        ` : `
+          <h2>Kioskový režim</h2>
+          <p class="muted" style="margin-top:8px">Zařízení nechte u dveří — žáci odpovídají postupně jeden po druhém.</p>
+          <p style="margin-top:16px"><a class="btn" href="#s=${id}">Otevřít formulář pro žáky →</a></p>
+        `}
+      </div>
+
+      <div>
+        <div class="card">
+          <div class="row spread">
+            <h2>Odpovědi</h2>
+            <div class="row"><span class="bignum" id="rCount">0</span><span class="muted">lístečků</span></div>
+          </div>
+          <div class="moodbar" id="rMoods" style="margin-top:14px"></div>
+        </div>
+
+        <div class="card" style="margin-top:16px">
+          <h2>Nástroje</h2>
+          <div class="row" style="margin-top:12px">
+            <button class="btn small secondary" id="btnCsv">⬇ Export CSV</button>
+            <button class="btn small" id="btnAi">✨ AI shrnutí</button>
+            <button class="btn small secondary" id="btnPrompt">📋 Prompt do schránky</button>
+          </div>
+          <p class="muted" style="margin-top:8px">Prompt do schránky vložíte do Copilota či Claude ručně — funguje bez API klíče.</p>
+          <div id="aiBox" style="margin-top:12px"></div>
+        </div>
+
+        <div class="card" style="margin-top:16px">
+          <h2>💡 ${esc(meta.q1)}</h2>
+          <div class="answers" id="rQ1"><p class="muted">Zatím žádná odpověď — čekáme na první lísteček…</p></div>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <h2>❓ ${esc(meta.q2)}</h2>
+          <div class="answers" id="rQ2"><p class="muted">Zatím žádná odpověď…</p></div>
+        </div>
+      </div>
+    </div>`;
+
+  const copyBtn = $("#btnCopy");
+  if(copyBtn) copyBtn.onclick = () => {
+    navigator.clipboard.writeText(studentUrl).then(()=>{ copyBtn.textContent = "Zkopírováno ✓"; setTimeout(()=>copyBtn.textContent="Kopírovat odkaz", 2000); });
+  };
+
+  let latest = [];
+  async function refresh(){
+    let resps = [];
+    try{ resps = await store.getResps(id); }catch(e){ return; }
+    latest = resps;
+    $("#rCount").textContent = resps.length;
+
+    const counts = [0,0,0,0,0];
+    resps.forEach(r => { if(r.mood>=0 && r.mood<5) counts[r.mood]++; });
+    const max = Math.max(1, ...counts);
+    $("#rMoods").innerHTML = MOODS.map((m,i)=>`
+      <div class="mrow">
+        <span style="font-size:1.4rem">${m.e}</span>
+        <div class="bar"><div class="fill" style="width:${counts[i]/max*100}%"></div></div>
+        <span class="cnt">${counts[i]}</span>
+      </div>`).join("");
+
+    const stub = (txt, who) => `<div class="stub">${esc(txt)}${who ? `<span class="who">— ${esc(who)}</span>` : ""}</div>`;
+    const a1 = resps.filter(r=>r.a1).map(r=>stub(r.a1, r.name)).reverse();
+    const a2 = resps.filter(r=>r.a2).map(r=>stub(r.a2, r.name)).reverse();
+    $("#rQ1").innerHTML = a1.length ? a1.join("") : '<p class="muted">Zatím žádná odpověď — čekáme na první lísteček…</p>';
+    $("#rQ2").innerHTML = a2.length ? a2.join("") : '<p class="muted">Zatím žádná odpověď…</p>';
+  }
+  refresh();
+  pollTimer = setInterval(refresh, store.remote ? 4000 : 1500);
+
+  /* ----- export CSV ----- */
+  $("#btnCsv").onclick = () => {
+    if(!latest.length){ aiMsg("Zatím nejsou žádné odpovědi k exportu."); return; }
+    const rows = [["čas","nálada","odpověď 1","odpověď 2","podpis"]];
+    latest.forEach(r => rows.push([
+      r.t ? new Date(r.t).toLocaleString("cs-CZ") : "",
+      r.mood>=0 && r.mood<5 ? MOODS[r.mood].l : "",
+      r.a1 || "", r.a2 || "", r.name || ""
+    ]));
+    const csv = "\uFEFF" + rows.map(row => row.map(v => '"' + String(v).replace(/"/g,'""') + '"').join(";")).join("\r\n");
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([csv], {type:"text/csv;charset=utf-8"}));
+    a.download = "exit-ticket-" + id + ".csv";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
+
+  /* ----- prompt pro AI ----- */
+  function buildPrompt(){
+    const counts = [0,0,0,0,0];
+    latest.forEach(r => { if(r.mood>=0 && r.mood<5) counts[r.mood]++; });
+    const moodLine = MOODS.map((m,i)=>`${m.l}: ${counts[i]}`).join(", ");
+    const list = (key) => latest.filter(r=>r[key]).map(r=>"- " + r[key]).join("\n") || "- (žádné odpovědi)";
+    return `Jsi zkušený pedagogický kouč. Níže je anonymní zpětná vazba žáků z hodiny „${meta.title}".
+
+Nálada třídy (${latest.length} lístečků): ${moodLine}
+
+Otázka „${meta.q1}" — odpovědi:
+${list("a1")}
+
+Otázka „${meta.q2}" — odpovědi:
+${list("a2")}
+
+Shrň to prosím česky a stručně:
+1. Celkové vyznění hodiny (2–3 věty).
+2. Co si žáci skutečně odnesli — hlavní témata.
+3. Kde zůstaly nejasnosti či miskoncepce.
+4. Tři konkrétní doporučení pro příští hodinu.`;
+  }
+
+  $("#btnPrompt").onclick = () => {
+    if(!latest.length){ aiMsg("Zatím nejsou žádné odpovědi."); return; }
+    navigator.clipboard.writeText(buildPrompt()).then(
+      () => aiMsg("Prompt zkopírován ✓ — vložte ho do Copilota, Claude či jiného AI asistenta."),
+      () => aiMsg("Kopírování se nepovedlo — zkuste to znovu.")
+    );
+  };
+
+  function aiMsg(txt){ $("#aiBox").innerHTML = `<p class="muted">${esc(txt)}</p>`; }
+
+  /* ----- AI shrnutí přes Anthropic API ----- */
+  $("#btnAi").onclick = () => {
+    if(!latest.length){ aiMsg("Zatím nejsou žádné odpovědi ke shrnutí."); return; }
+    const key = CONFIG.aiKey || localStorage.getItem(LS_AI) || "";
+    if(!key){ askForKey(); return; }
+    runAI(key);
+  };
+
+  function askForKey(){
+    $("#aiBox").innerHTML = `
+      <label for="aiKey">API klíč — Mistral nebo Anthropic <span class="muted">(uloží se jen v tomto prohlížeči)</span></label>
+      <input type="text" id="aiKey" placeholder="klíč z console.mistral.ai nebo sk-ant-…" autocomplete="off">
+      <div class="row" style="margin-top:10px">
+        <button class="btn small" id="aiKeySave">Uložit a shrnout</button>
+        <span class="muted">Poskytovatele poznám podle formátu klíče. Nepoužívejte na sdíleném počítači.</span>
+      </div>`;
+    $("#aiKeySave").onclick = () => {
+      const k = $("#aiKey").value.trim();
+      if(!k){ return; }
+      localStorage.setItem(LS_AI, k);
+      runAI(k);
+    };
+  }
+
+  async function runAI(key){
+    $("#aiBox").innerHTML = `<p class="muted">✨ Přemýšlím nad odpověďmi třídy…</p>`;
+    const isAnthropic = key.startsWith("sk-ant-");
+    try{
+      let text = "";
+      if(isAnthropic){
+        const r = await fetch("https://api.anthropic.com/v1/messages", {
+          method:"POST",
+          headers:{
+            "content-type":"application/json",
+            "x-api-key": key,
+            "anthropic-version":"2023-06-01",
+            "anthropic-dangerous-direct-browser-access":"true"
+          },
+          body: JSON.stringify({
+            model:"claude-haiku-4-5",
+            max_tokens:1200,
+            messages:[{role:"user", content: buildPrompt()}]
+          })
+        });
+        const data = await r.json();
+        if(!r.ok){
+          if(r.status === 401){ localStorage.removeItem(LS_AI); askForKey(); return; }
+          throw new Error(data && data.error ? data.error.message : "HTTP " + r.status);
+        }
+        text = (data.content || []).filter(b=>b.type==="text").map(b=>b.text).join("\n");
+      }else{
+        const r = await fetch("https://api.mistral.ai/v1/chat/completions", {
+          method:"POST",
+          headers:{
+            "content-type":"application/json",
+            "authorization":"Bearer " + key
+          },
+          body: JSON.stringify({
+            model:"mistral-small-latest",
+            max_tokens:1200,
+            messages:[{role:"user", content: buildPrompt()}]
+          })
+        });
+        const data = await r.json();
+        if(!r.ok){
+          if(r.status === 401){ localStorage.removeItem(LS_AI); askForKey(); return; }
+          const m = (data && (data.message || (data.error && data.error.message))) || ("HTTP " + r.status);
+          throw new Error(typeof m === "string" ? m : JSON.stringify(m));
+        }
+        text = data.choices && data.choices[0] ? data.choices[0].message.content : "";
+      }
+      if(!text) throw new Error("AI vrátila prázdnou odpověď.");
+      $("#aiBox").innerHTML = `<div class="stub" style="transform:none;white-space:pre-wrap">${esc(text)}</div>
+        <p class="muted" style="margin-top:8px">Shrnutí vygenerovala AI (${isAnthropic ? "Claude Haiku" : "Mistral Small"}) — berte jako podklad, ne verdikt.</p>`;
+    }catch(err){
+      $("#aiBox").innerHTML = `<p class="muted" style="color:var(--red)">Shrnutí se nepovedlo: ${esc(err.message)}</p>`;
+    }
+  }
+}
+
+/* ================= formulář žáka ================= */
+async function viewStudent(id, dbFromLink){
+  const db = dbFromLink || getDb();
+  const store = makeStore(db);
+  const kiosk = !store.remote;
+  $("#topStatus").textContent = "";
+
+  let meta = null;
+  try{ meta = await store.getMeta(id); }catch(e){}
+  if(!meta){
+    app.innerHTML = `<div class="card"><h2>Sběr nenalezen</h2><p class="muted" style="margin-top:8px">Zkuste QR kód naskenovat znovu, nebo se zeptejte vyučujícího.</p></div>`;
+    return;
+  }
+
+  let mood = -1;
+  app.innerHTML = `
+    <p class="eyebrow">Exit ticket · anonymní</p>
+    <h1>${esc(meta.title)}</h1>
+    <div class="card" style="margin-top:20px">
+      <label>Jak ti dnes hodina sedla?</label>
+      <div class="moods" id="sMoods">
+        ${MOODS.map((m,i)=>`<button type="button" class="mood" data-i="${i}" aria-pressed="false"><span class="e">${m.e}</span><span class="l">${m.l}</span></button>`).join("")}
+      </div>
+      <label for="sA1">${esc(meta.q1)}</label>
+      <textarea id="sA1" maxlength="500" placeholder="Napiš pár slov…"></textarea>
+      <label for="sA2">${esc(meta.q2)}</label>
+      <textarea id="sA2" maxlength="500" placeholder="Klidně nech prázdné, když je vše jasné."></textarea>
+      <label for="sName">Podpis <span class="muted">(nepovinné — stačí iniciály)</span></label>
+      <input type="text" id="sName" maxlength="30" autocomplete="off">
+      <div class="row" style="margin-top:20px">
+        <button class="btn" id="btnSend">Odevzdat lísteček 🎟️</button>
+      </div>
+      <div class="muted" id="sErr" style="color:var(--red);margin-top:8px"></div>
+    </div>`;
+
+  document.querySelectorAll(".mood").forEach(b => b.onclick = () => {
+    mood = +b.dataset.i;
+    document.querySelectorAll(".mood").forEach(x => { x.classList.toggle("sel", x===b); x.setAttribute("aria-pressed", x===b); });
+  });
+
+  $("#btnSend").onclick = async () => {
+    const a1 = $("#sA1").value.trim(), a2 = $("#sA2").value.trim();
+    if(mood < 0 && !a1 && !a2){ $("#sErr").textContent = "Vyber aspoň smajlíka, nebo napiš odpověď."; return; }
+    const btn = $("#btnSend");
+    btn.disabled = true; btn.textContent = "Odesílám…";
+    try{
+      await store.addResp(id, { mood, a1, a2, name: $("#sName").value.trim(), t: Date.now() });
+      app.innerHTML = `<div class="card thanks">
+        <div class="e">🎟️</div>
+        <h1>Díky, lísteček doručen!</h1>
+        <p class="muted" style="margin-top:8px">Tvoje zpětná vazba pomáhá dělat příští hodinu lepší.</p>
+        ${kiosk ? '<p style="margin-top:20px" class="muted" id="kioskNote">Předej zařízení dalšímu… (formulář se obnoví za <span id="cd">5</span> s)</p>' : ""}
+      </div>`;
+      if(kiosk){
+        let n = 5;
+        const t = setInterval(()=>{
+          n--; const el = $("#cd");
+          if(el) el.textContent = n;
+          if(n<=0){ clearInterval(t); viewStudent(id, null); }
+        }, 1000);
+      }
+    }catch(err){
+      $("#sErr").textContent = "Odeslání se nepovedlo: " + err.message + " — zkus to znovu.";
+      btn.disabled = false; btn.textContent = "Odevzdat lísteček 🎟️";
+    }
+  };
+}
+</script>
+</body>
+</html>
