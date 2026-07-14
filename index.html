@@ -443,9 +443,7 @@ async function viewResults(id){
       return `
       <div class="mrow">
         <span style="font-size:1.4rem">${m.e}</span>
-        <div class="bar" style="height:20px;border:1.5px solid var(--ink);border-radius:6px;background:#fff;overflow:hidden">
-          <div class="fill" style="height:100%;width:${pct}%;background:var(--hl);${counts[i] ? "border-right:1.5px solid var(--ink);" : ""}transition:width .4s ease"></div>
-        </div>
+        <div class="bar" style="display:block;width:100%;min-width:120px;height:20px;border:1.5px solid var(--ink);border-radius:6px;background:linear-gradient(90deg, #FFD338 ${pct}%, #ffffff ${pct}%)"></div>
         <span class="cnt">${counts[i]} <small style="font-weight:600;color:var(--ink-soft);font-size:.72rem">${pct}\u00A0%</small></span>
       </div>`;
     }).join("");
