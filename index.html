@@ -245,6 +245,21 @@ function route(){
 }
 
 /* ================= domovská obrazovka (učitel) ================= */
+function histCard(){
+  const hist = JSON.parse(localStorage.getItem("et_hist") || "[]");
+  if(!hist.length) return "";
+  return `<div class="card" style="margin-top:20px">
+    <h2>Moje sběry</h2>
+    <p class="muted" style="margin-top:4px">Kliknutím se vrátíte k výsledkům — data zůstávají uložená v databázi.</p>
+    <div class="answers" style="margin-top:12px">
+      ${hist.map(h => `<a class="stub" style="display:block;text-decoration:none;color:inherit" href="#r=${esc(h.id)}">
+        <strong>${esc(h.title)}</strong>
+        <span class="who">${h.created ? new Date(h.created).toLocaleString("cs-CZ") : ""} · kód ${esc(h.id)}</span>
+      </a>`).join("")}
+    </div>
+  </div>`;
+}
+
 function viewHome(){
   const db = getDb();
   $("#topStatus").innerHTML = db
@@ -292,7 +307,9 @@ function viewHome(){
           <p class="muted" style="margin-top:8px">⚠️ V testovacím režimu jsou data veřejně čitelná — proto sbíráme jen anonymní odpovědi, žádné osobní údaje.</p>
         </details>
       </details>`}
-    </div>`;
+    </div>
+
+    ${histCard()}`;
 
   const btnSaveDb = $("#btnSaveDb");
   if(btnSaveDb) btnSaveDb.onclick = () => {
@@ -317,6 +334,9 @@ function viewHome(){
     btn.disabled = true; btn.textContent = "Zakládám…";
     try{
       await makeStore(getDb()).putMeta(id, meta);
+      const hist = JSON.parse(localStorage.getItem("et_hist") || "[]");
+      hist.unshift({id, title: meta.title, created: meta.created});
+      localStorage.setItem("et_hist", JSON.stringify(hist.slice(0, 30)));
       location.hash = "r=" + id;
     }catch(err){
       $("#homeErr").textContent = "Nepodařilo se založit sběr: " + err.message;
